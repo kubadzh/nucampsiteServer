@@ -12,15 +12,15 @@ const partnerRouter = require('./routes/partnerRouter');
 
 const mongoose = require('mongoose');
 
-const url = 'mongodb://localhost:27017/nucampsite';
-const connect = mongoose.connect(url, {
+const url = 'mongodb://localhost:27017/nucampsite'; // url for mongodb server
+const connect = mongoose.connect(url, { // we setup a connection
     useCreateIndex: true,
     useFindAndModify: false,
     useNewUrlParser: true,
     useUnifiedTopology: true
 });
 
-connect.then(() => console.log('Connected correctly to server'),
+connect.then(() => console.log('Connected correctly to server'), // handling promise
     err => console.log(err)
 );
 
