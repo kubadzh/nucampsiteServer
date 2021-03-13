@@ -10,6 +10,20 @@ const campsiteRouter = require('./routes/campsiteRouter');
 const promotionRouter = require('./routes/promotionRouter');
 const partnerRouter = require('./routes/partnerRouter');
 
+const mongoose = require('mongoose');
+
+const url = 'mongodb://localhost:27017/nucampsite'; // url for mongodb server
+const connect = mongoose.connect(url, {  // we setup a connection
+    useCreateIndex: true,
+    useFindAndModify: false,
+    useNewUrlParser: true, 
+    useUnifiedTopology: true
+});
+
+connect.then(() => console.log('Connected correctly to server'), // handling promise
+    err => console.log(err)
+);
+
 var app = express();
 
 // view engine setup
@@ -44,5 +58,30 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
+
+////////////////////////////////
+
+var express = require('express')
+var cookieParser = require('cookie-parser')
+ 
+var app = express()
+app.use(cookieParser())
+ 
+app.get('/', function (req, res) {
+  // Cookies that have not been signed
+  console.log('Cookies: ', req.cookies)
+ 
+  // Cookies that have been signed
+  console.log('Signed Cookies: ', req.signedCookies)
+})
+ 
+app.listen(8080)
+ 
+// curl command that sends an HTTP request with two cookies
+// curl http://127.0.0.1:8080 --cookie "Cho=Kim;Greet=Hello"
+
+//////////////////////////////////
+
 
 module.exports = app;
