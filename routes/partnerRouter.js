@@ -1,59 +1,97 @@
 const express = require('express');
 const partnerRouter = express.Router();
+const Partner = require('../models/partner'); // now we can use Partner model that is exported from partner module
 
-partnerRouter.route('/')
 
-    .all((req, res, next) => {
+
+partnerRouter
+  .route('/')
+  .get((req, res, next) => {
+    Partner.find()
+      .then((partners) => {
         res.statusCode = 200;
-        res.setHeader('Content-Type', 'text/plain');
-        next();
-    })
+        res.setHeader('Content-Type', 'application/json');
+        res.json(partners);
+      })
+      .catch((err) => next(err)); // this will pass off the err to overall err handler for this express app, and let express handle this err
+  })
 
-    .get((req, res) => {
-        res.end('Will send all the partners to you');
-    })
+  .post((req, res, next) => {
+    Partner.create(req.body)
+      .then((partner) => {
+        console.log('Partner Created', partner);
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(partner); // to send info about the posted document to the client
+      })
+      .catch((err) => next(err));
+  })
 
-    .post((req, res) => {
-        res.end(`Will add the partners:  with description:`); // Use backtiks 
-    })
+  .put((req, res) => {
+    res.statusCode = 403; // when operation not supported
+    res.end('PUT operation not supported on /partners');
+  })
 
-    .put((req, res) => { 
-        res.statusCode = 403;   // when operation not supported
-        res.end('PUT operation not supported on /partners');
-    })
+  .delete((req, res, next) => {
+    // delete operation // we pass next f for the err handling
+    Partner.deleteMany() // static method with empty param, whihc results in every doc in partner collection being deleted
+      .then(response => {
+        // this method to access the return value from this operation
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(partner);
+      })
+      .catch((err) => next(err));
+  });
 
-    .delete((req, res) => {   // delete operation 
-        res.end('Deleting all partners');
-});
+partnerRouter
+  .route('/:partnerId')
+  // 4 methods to handle endpints , Workshop Week 1
 
+  .get((req, res, next) => {
+    // allows us to store whatever client sends as a part of the path after the '/ ' as a rout parameter named 'campsiteId'
+    Partner.findById(req.params.partnerId)
+      .then((partner) => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(partner);
+      })
+      .catch((err) => next(err));
+  })
 
-partnerRouter.route('/:partnerId') 
-// 4 methods to handle endpints , Workshop Week 1
-        .all((req, res, next) => { 
-            res.statusCode = 200;
-            res.setHeader('Content-Type', 'text/plain');
-            next();
-        })
-        .get((req, res) => {  // allows us to store whatever client sends as a part of the path after the '/ ' as a rout parameter named 'campsiteId'
-            res.end(`Will send details of the partner: ${req.params.partnerId} to you`);
-        })
+  .post((req, res) => {
+    res.statusCode = 403;
+    res.end(
+      `POST operation not supported on /partners/${req.params.partnerId}`
+    );
+  })
 
-        .post((req, res) => {
-            res.statusCode = 403;
-            res.end(`POST operation not supported on /partners/${req.params.partnerId}`);
-        })
+  // name and description is coming from postman object {'name': 'test', 'description': 'test description'} //
+  .put((req, res, next) => {
+    Partner.findByIdAndUpdate(
+      req.params.partnerId,
+      {
+        $set: req.body,
+      },
+      { new: true }
+    )
+      .then((partner) => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(partner);
+      })
+      .catch((err) => next(err));
+  })
 
+  .delete((req, res, next) => {
+    // passing a callback with the param 'req' and 'res'
+    Partner.findByIdAndDelete(req.params.partnerId)
+      .then((response) => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(response);
+      })
+      .catch((err) => next(err));
+  });
 
-        // name and description is coming from postman object {"name": "test", "description": "test description"} // 
-        .put((req, res) => {
-            
-            res.write(`Updating the partner: ${req.params.partnerId}\n`); 
-            res.end(`Will update the partner: ${req.body.name} 
-                with description: ${req.body.description}`);
-        })
-
-        .delete((req, res) => {  // passing a callback with the param 'req' and 'res'
-            res.end(`Deleting partner: ${req.params.partnerId}`);
-});
-
-module.exports = partnerRouter;  
+module.exports = partnerRouter;
