@@ -4,6 +4,9 @@
 const express = require('express');
 const User = require('../models/user');
 
+const passport = require('passport');
+
+
 const router = express.Router();
 
 /* GET users listing. */
@@ -11,8 +14,25 @@ router.get('/', function(req, res, next) {
     res.send('respond with a resource');
 });
 
-router.post('/signup', (req, res, next) => { // this will alow a new user to register on our website
-    User.findOne({username: req.body.username}) // we check if username is already taken, by using a static method 'findOne'
+router.post('/signup', (req, res) => { // this will alow a new user to register on our website
+    User.register(
+        new User({username: req.body.username}), // new user
+        req.body.password, // password that we plug directly from incoming
+        err => {
+            if (err) { // if there was an err internally when trying register
+                res.statusCode = 500;
+                res.setHeader('Content-Type', 'application/json');
+                res.json({err: err});
+            } else { // if no err, then we will authenticate a new user
+                passport.authenticate('local')(req, res, () => {
+                    res.statusCode = 200;
+                    res.setHeader('Content-Type', 'application/json');
+                    res.json({success: true, status: 'Registration Successful!'});
+                });
+            }
+        }
+    );
+    /* User.findOne({username: req.body.username}) // we check if username is already taken, by using a static method 'findOne'
     .then(user => {
         if (user) {
             const err = new Error(`User ${req.body.username} already exists!`);
@@ -30,10 +50,15 @@ router.post('/signup', (req, res, next) => { // this will alow a new user to reg
             .catch(err => next(err));
         }
     })
-    .catch(err => next(err));
+    .catch(err => next(err)); */
 });
 
-router.post('/login', (req, res, next) => {
+router.post('/login', passport.authenticate('local'), (req, res) => {// adding middleware 'passport.authenticate('local'),' will allow passport authentication on this route, and will handle loging the user
+res.statusCode= 200;
+res.setHeader('Content-Type', 'application/json');
+res.json({success: true, status: 'You are successfully logged in!'});
+});
+/*router.post('/login', (req, res, next) => {
     if(!req.session.user) { // we check if user has already checked in
         const authHeader = req.headers.authorization;
 
@@ -72,7 +97,7 @@ router.post('/login', (req, res, next) => {
         res.setHeader('Content-Type', 'text/plain');
         res.end('You are already authenticated!');
     }
-});
+}); */
 
 // We use .get, becasue client is not submitting any info to the server
 // such as username and password, "Hey, I am out, you can stop tracking my session now..."

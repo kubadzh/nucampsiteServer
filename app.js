@@ -7,6 +7,9 @@ var logger = require('morgan');
 const session = require('express-session');
 const FileStore = require('session-file-store')(session); // require f is returning another f as its return value, then we immediately calling that return f with this 2nd param list of 'session.. 
 
+const passport = require('passport');
+const authenticate = require('./authenticate');
+
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 const campsiteRouter = require('./routes/campsiteRouter');
@@ -14,6 +17,8 @@ const promotionRouter = require('./routes/promotionRouter');
 const partnerRouter = require('./routes/partnerRouter');
 
 const mongoose = require('mongoose');
+
+
 
 const url = 'mongodb://localhost:27017/nucampsite'; // url for mongodb server
 const connect = mongoose.connect(url, { // we setup a connection
@@ -50,26 +55,26 @@ app.use(session({
   store: new FileStore() // this will create a new FileStore as an object that we use to save our session infomration to the servers hard disk, instead of just running the apps memmory. You will see a session folder in VS Code, where session info is stored. 
 }));
 
+// Middleware f provided by passport to check incoming requests to see if there is existing session for the client, 
+//if so, the session data for the client is loaded into the client as req.user
+app.use(passport.initialize());
+app.use(passport.session());
+
+
 //Below two are placed above the auth f
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 // Basic authentication on a server and use of sessions,see below
 function auth(req, res, next) {
-  console.log(req.session);
+  console.log(req.user);
 
-  if (!req.session.user) {
+  if (!req.user) {
         const err = new Error('You are not authenticated!');
         err.status = 401;
         return next(err);
 
   } else {
-      if (req.session.user === 'authenticated') {
           return next();
-      } else {
-          const err = new Error('You are not authenticated!');
-          err.status = 401;
-          return next(err);
-      }
   }
 }
 
