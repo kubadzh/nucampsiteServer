@@ -47,37 +47,23 @@ app.use(session({
   secret: '12345-67890-09876-54321',
   saveUninitialized: false, // when new session is created, but then no updates are made to it, then at the end of the request it won't get saved, because it will just be an empty session without any usefull information and also no cookie will be sent to the client, that helps to prevent to have bunch of empty files and cookies being setup
   resave: false, // once the seesion has bee created it will continue to be re-saved whenever request has been made to that session, even if that req didnt make any updates that needed to be saved
-  store: new FileStore() // this will create a new FileStore as an object that we use to save our session infomration to the servers hard disk, instead of just running the apps memmory 
+  store: new FileStore() // this will create a new FileStore as an object that we use to save our session infomration to the servers hard disk, instead of just running the apps memmory. You will see a session folder in VS Code, where session info is stored. 
 }));
 
-
-// Basic authentication on a server and use pf cookies,see below
+//Below two are placed above the auth f
+app.use('/', indexRouter);
+app.use('/users', usersRouter);
+// Basic authentication on a server and use of sessions,see below
 function auth(req, res, next) {
   console.log(req.session);
 
   if (!req.session.user) {
-      const authHeader = req.headers.authorization;
-      if (!authHeader) {
-          const err = new Error('You are not authenticated!');
-          res.setHeader('WWW-Authenticate', 'Basic');
-          err.status = 401;
-          return next(err);
-      }
+        const err = new Error('You are not authenticated!');
+        err.status = 401;
+        return next(err);
 
-      const auth = Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
-      const user = auth[0];
-      const pass = auth[1];
-      if (user === 'admin' && pass === 'password') {
-          req.session.user = 'admin';
-          return next(); // authorized
-      } else {
-          const err = new Error('You are not authenticated!');
-          res.setHeader('WWW-Authenticate', 'Basic');
-          err.status = 401;
-          return next(err);
-      }
   } else {
-      if (req.session.user === 'admin') {
+      if (req.session.user === 'authenticated') {
           return next();
       } else {
           const err = new Error('You are not authenticated!');
@@ -93,8 +79,7 @@ app.use(auth);
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+
 app.use('/campsites', campsiteRouter);
 app.use('/promotions', promotionRouter);
 app.use('/partners', partnerRouter);
