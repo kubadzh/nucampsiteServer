@@ -19,20 +19,35 @@ router.post('/signup', (req, res) => { // this will alow a new user to register 
     User.register(
         new User({username: req.body.username}), // new user
         req.body.password, // password that we plug directly from incoming
-        err => {
-            if (err) { // if there was an err internally when trying register
+        (err, user) => {
+            if (err) {
                 res.statusCode = 500;
                 res.setHeader('Content-Type', 'application/json');
                 res.json({err: err});
-            } else { // if no err, then we will authenticate a new user
-                passport.authenticate('local')(req, res, () => {
-                    res.statusCode = 200;
-                    res.setHeader('Content-Type', 'application/json');
-                    res.json({success: true, status: 'Registration Successful!'});
+            } else {
+                if (req.body.firstname) {
+                    user.firstname = req.body.firstname;
+                }
+                if (req.body.lastname) {
+                    user.lastname = req.body.lastname;
+                }
+                user.save(err => {
+                    if (err) {
+                        res.statusCode = 500;
+                        res.setHeader('Content-Type', 'application/json');
+                        res.json({err: err});
+                        return;
+                    }
+                    passport.authenticate('local')(req, res, () => {
+                        res.statusCode = 200;
+                        res.setHeader('Content-Type', 'application/json');
+                        res.json({success: true, status: 'Registration Successful!'});
+                    });
                 });
             }
         }
     );
+});
     /* User.findOne({username: req.body.username}) // we check if username is already taken, by using a static method 'findOne'
     .then(user => {
         if (user) {
@@ -52,7 +67,7 @@ router.post('/signup', (req, res) => { // this will alow a new user to register 
         }
     })
     .catch(err => next(err)); */
-});
+
 
 // We are using a local strategy to authenticate the user
 router.post('/login', passport.authenticate('local'), (req, res) => {// adding middleware 'passport.authenticate('local'),' will allow passport authentication on this route, and will handle loging the user

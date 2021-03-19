@@ -18,8 +18,8 @@ const commentSchema = new Schema({
         required: true
     },
     author: { // property of author
-        type: String,
-        required: true
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     }
 }, {
     timestamps: true // mongoose will take care of createdAt, updatedAt
