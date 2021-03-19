@@ -1,7 +1,7 @@
 const express = require('express');
 const partnerRouter = express.Router();
 const Partner = require('../models/partner'); // now we can use Partner model that is exported from partner module
-
+const authenticate = require('../authenticate');
 
 
 partnerRouter
@@ -16,7 +16,7 @@ partnerRouter
       .catch((err) => next(err)); // this will pass off the err to overall err handler for this express app, and let express handle this err
   })
 
-  .post((req, res, next) => {
+  .post(authenticate.verifyUser, (req, res, next) => {
     Partner.create(req.body)
       .then((partner) => {
         console.log('Partner Created', partner);
@@ -27,12 +27,12 @@ partnerRouter
       .catch((err) => next(err));
   })
 
-  .put((req, res) => {
+  .put(authenticate.verifyUser, (req, res) => {
     res.statusCode = 403; // when operation not supported
     res.end('PUT operation not supported on /partners');
   })
 
-  .delete((req, res, next) => {
+  .delete(authenticate.verifyUser, (req, res, next) => {
     // delete operation // we pass next f for the err handling
     Partner.deleteMany() // static method with empty param, whihc results in every doc in partner collection being deleted
       .then(response => {
@@ -59,7 +59,7 @@ partnerRouter
       .catch((err) => next(err));
   })
 
-  .post((req, res) => {
+  .post(authenticate.verifyUser, (req, res) => {
     res.statusCode = 403;
     res.end(
       `POST operation not supported on /partners/${req.params.partnerId}`
@@ -67,7 +67,7 @@ partnerRouter
   })
 
   // name and description is coming from postman object {'name': 'test', 'description': 'test description'} //
-  .put((req, res, next) => {
+  .put(authenticate.verifyUser, (req, res, next) => {
     Partner.findByIdAndUpdate(
       req.params.partnerId,
       {
@@ -83,7 +83,7 @@ partnerRouter
       .catch((err) => next(err));
   })
 
-  .delete((req, res, next) => {
+  .delete(authenticate.verifyUser, (req, res, next) => {
     // passing a callback with the param 'req' and 'res'
     Partner.findByIdAndDelete(req.params.partnerId)
       .then((response) => {

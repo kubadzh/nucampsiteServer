@@ -5,6 +5,7 @@ const express = require('express');
 const User = require('../models/user');
 
 const passport = require('passport');
+const authenticate = require('../authenticate');
 
 
 const router = express.Router();
@@ -53,10 +54,12 @@ router.post('/signup', (req, res) => { // this will alow a new user to register 
     .catch(err => next(err)); */
 });
 
+// We are using a local strategy to authenticate the user
 router.post('/login', passport.authenticate('local'), (req, res) => {// adding middleware 'passport.authenticate('local'),' will allow passport authentication on this route, and will handle loging the user
-res.statusCode= 200;
-res.setHeader('Content-Type', 'application/json');
-res.json({success: true, status: 'You are successfully logged in!'});
+    const token = authenticate.getToken({_id: req.user._id});//Once user is authenticated, we issue a token. We are passing an object that contains a payload
+    res.statusCode= 200;
+    res.setHeader('Content-Type', 'application/json');
+    res.json({success: true, token: token, status: 'You are successfully logged in!'}); // Once we have a token we include it in the responce to the client, by adding token prop to the responce object like this 'token: token'
 });
 /*router.post('/login', (req, res, next) => {
     if(!req.session.user) { // we check if user has already checked in
