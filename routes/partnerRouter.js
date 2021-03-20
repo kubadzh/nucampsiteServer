@@ -16,7 +16,7 @@ partnerRouter
       .catch((err) => next(err)); // this will pass off the err to overall err handler for this express app, and let express handle this err
   })
 
-  .post(authenticate.verifyUser, (req, res, next) => {
+  .post(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Partner.create(req.body)
       .then((partner) => {
         console.log('Partner Created', partner);
@@ -32,7 +32,7 @@ partnerRouter
     res.end('PUT operation not supported on /partners');
   })
 
-  .delete(authenticate.verifyUser, (req, res, next) => {
+  .delete(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     // delete operation // we pass next f for the err handling
     Partner.deleteMany() // static method with empty param, whihc results in every doc in partner collection being deleted
       .then(response => {
@@ -67,7 +67,7 @@ partnerRouter
   })
 
   // name and description is coming from postman object {'name': 'test', 'description': 'test description'} //
-  .put(authenticate.verifyUser, (req, res, next) => {
+  .put(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Partner.findByIdAndUpdate(
       req.params.partnerId,
       {
@@ -83,7 +83,7 @@ partnerRouter
       .catch((err) => next(err));
   })
 
-  .delete(authenticate.verifyUser, (req, res, next) => {
+  .delete(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     // passing a callback with the param 'req' and 'res'
     Partner.findByIdAndDelete(req.params.partnerId)
       .then((response) => {

@@ -17,7 +17,7 @@ promotionRouter
       .catch((err) => next(err)); // this will make express handle the err
   })
 
-  .post(authenticate.verifyUser, (req, res, next) => {
+  .post(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Promotion.create(req.body) // this will create a new promotion document and save it to the mongodb server, we wil create this doc from request body whihc should contain info for the promotion
       .then((promotion) => {
         console.log("Promotion Created", promotion);
@@ -33,7 +33,7 @@ promotionRouter
     res.end("PUT operation not supported on /promotions");
   })
 
-  .delete(authenticate.verifyUser, (req, res, next) => {
+  .delete(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     // delete operation
     Promotion.deleteMany()
       .then((response) => {
@@ -67,7 +67,7 @@ promotionRouter
     );
   })
 
-  .put(authenticate.verifyUser, (req, res, next) => {
+  .put(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Promotion.findByIdAndUpdate(
       req.params.promotionId,
       {
@@ -84,7 +84,7 @@ promotionRouter
       .catch((err) => next(err));
   })
 
-  .delete(authenticate.verifyUser, (req, res, next) => {
+  .delete(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     // passing a callback with the param 'req' and 'res'
     Promotion.findByIdAndDelete(req.params.promotionId)
       .then((responce) => {

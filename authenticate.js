@@ -48,3 +48,13 @@ exports.jwtPassport = passport.use(
 //'jwt' - we indicate that we want to use JSON Web Token strategy
 //{session: false} - we are not using sessions
 exports.verifyUser = passport.authenticate('jwt', {session: false});
+
+exports.verifyAdmin = (req, res, next) => {
+    if (req.user.admin){
+        return next();
+    } else {
+        const err = new Error('You are not authorized to perform this operation!');
+        err.status = 403 ;
+        return next(err);
+    }
+};
