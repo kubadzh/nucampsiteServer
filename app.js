@@ -29,7 +29,21 @@ connect.then(() => console.log('Connected correctly to server'), // handling pro
     err => console.log(err)
 );
 
+//Creating express application
 var app = express();
+
+// Secure traffic only. Redirect any traffic coming to insecure port to the secure one
+// we are catching any requests. We are using wildcart *
+app.all('*', (req, res, next) => {
+  if (req.secure) { // secure property is set automatically to true
+    return next();
+  } else { // if connection is not secure then we do else
+      console.log(`Redirecting to: https://${req.hostname}:${app.get('secPort')}${req.url}`);
+      res.redirect(301, `https://${req.hostname}:${app.get('secPort')}${req.url}`);
+  }
+});
+
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
