@@ -6,12 +6,13 @@ const User = require('../models/user');
 
 const passport = require('passport');
 const authenticate = require('../authenticate');
+const cors = require('./cors'); // importing cors module
 
 
 const router = express.Router();
 
 /* GET users listing. */
-router.get('/', authenticate.verifyUser, authenticate.verifyAdmin, function(req, res, next) {
+router.get('/', cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, function(req, res, next) {
     User.find()
     .then(users => {
         res.statusCode = 200;
@@ -21,7 +22,7 @@ router.get('/', authenticate.verifyUser, authenticate.verifyAdmin, function(req,
     .catch(err => next(err));
 });
 
-router.post('/signup', (req, res) => { // this will alow a new user to register on our website
+router.post('/signup', cors.corsWithOptions, (req, res) => { // this will alow a new user to register on our website
     User.register(
         new User({username: req.body.username}), // new user
         req.body.password, // password that we plug directly from incoming
@@ -76,7 +77,7 @@ router.post('/signup', (req, res) => { // this will alow a new user to register 
 
 
 // We are using a local strategy to authenticate the user
-router.post('/login', passport.authenticate('local'), (req, res) => {// adding middleware 'passport.authenticate('local'),' will allow passport authentication on this route, and will handle loging the user
+router.post('/login', cors.corsWithOptions, passport.authenticate('local'), (req, res) => {// adding middleware 'passport.authenticate('local'),' will allow passport authentication on this route, and will handle loging the user
     const token = authenticate.getToken({_id: req.user._id});//Once user is authenticated, we issue a token. We are passing an object that contains a payload
     res.statusCode= 200;
     res.setHeader('Content-Type', 'application/json');
@@ -125,7 +126,7 @@ router.post('/login', passport.authenticate('local'), (req, res) => {// adding m
 
 // We use .get, becasue client is not submitting any info to the server
 // such as username and password, "Hey, I am out, you can stop tracking my session now..."
-router.get('/logout', (req, res, next) => {
+router.get('/logout', cors.corsWithOptions, (req, res, next) => {
     if (req.session) {
         req.session.destroy(); // we are deleteing session file on the server-side
         res.clearCookie('session-id'); // this will clear the cookie thats been store on the client

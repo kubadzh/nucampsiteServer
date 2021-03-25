@@ -3,10 +3,11 @@ const Promotion = require("../models/promotion"); // now we can use Promotion mo
 
 const promotionRouter = express.Router();
 const authenticate = require('../authenticate');
+const cors = require('./cors'); // importing cors module
 
-promotionRouter
-  .route("/")
-  .get((req, res, next) => {
+promotionRouter.route("/")
+  .options(cors.corsWithOptions, (req, res) => res.sendStatus(200)) // this method will deal with pre-flight requests
+.get(cors.cors, (req, res, next) => {
     // we pass next f as an arg
     Promotion.find()
       .then((promotions) => {
@@ -17,7 +18,7 @@ promotionRouter
       .catch((err) => next(err)); // this will make express handle the err
   })
 
-  .post(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+  .post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Promotion.create(req.body) // this will create a new promotion document and save it to the mongodb server, we wil create this doc from request body whihc should contain info for the promotion
       .then((promotion) => {
         console.log("Promotion Created", promotion);
@@ -28,12 +29,12 @@ promotionRouter
       .catch((err) => next(err));
   })
 
-  .put(authenticate.verifyUser, (req, res) => {
+  .put(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res) => {
     res.statusCode = 403; // when operation not supported
     res.end("PUT operation not supported on /promotions");
   })
 
-  .delete(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+  .delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     // delete operation
     Promotion.deleteMany()
       .then((response) => {
@@ -45,11 +46,11 @@ promotionRouter
       .catch((err) => next(err));
   });
 
-promotionRouter
-  .route("/:promotionId")
+promotionRouter.route("/:promotionId")
   // 4 methods to handle endpints , Workshop Week 1
 
-  .get((req, res, next) => {
+  .options(cors.corsWithOptions, (req, res) => res.sendStatus(200)) // this method will deal with pre-flight requests
+.get(cors.cors, (req, res, next) => {
     // allows us to store whatever client sends as a part of the path after the '/ ' as a rout parameter named 'campsiteId'
     Promotion.findById(req.params.promotionId)
       .then((promotion) => {
@@ -60,14 +61,14 @@ promotionRouter
       .catch((err) => next(err));
   })
 
-  .post(authenticate.verifyUser, (req, res) => {
+  .post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res) => {
     res.statusCode = 403;
     res.end(
       `POST operation not supported on /promotions/${req.params.promotionId}`
     );
   })
 
-  .put(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+  .put(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Promotion.findByIdAndUpdate(
       req.params.promotionId,
       {
@@ -84,7 +85,7 @@ promotionRouter
       .catch((err) => next(err));
   })
 
-  .delete(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+  .delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     // passing a callback with the param 'req' and 'res'
     Promotion.findByIdAndDelete(req.params.promotionId)
       .then((responce) => {
