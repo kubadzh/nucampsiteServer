@@ -15,6 +15,7 @@ const userSchema = new Schema({
         type: String,
         default: ''
     },
+    facebookId: String, // We will associate FB Id with user account, and this will be unique Id that FB assigned to each user's account
     admin: { // Field #3
         type: Boolean,
         default: false
@@ -25,3 +26,5 @@ userSchema.plugin(passportLocalMongoose);
 
 
 module.exports = mongoose.model('User', userSchema); // Collection will automatically named 'users'
+
+// We will associate FB Id with user account, and this will be unique Id that FB assigned to each user's account

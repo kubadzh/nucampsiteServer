@@ -138,4 +138,17 @@ router.get('/logout', cors.corsWithOptions, (req, res, next) => {
     }
 });
 
+///// New route for our app to handle passing us access token from Facebook
+
+router.get('/facebook/token', passport.authenticate('facebook-token'), (req, res) => { // '(req, res)' - Responce to the client after authentication is completed using the access token
+    if (req.user) { // Making sure if there is a valid user, passport should have added a user property to the request object so we just double-checking here
+        const token = authenticate.getToken({_id: req.user._id}); //
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json({success: true, token: token, status: 'You are successfully logged in!'});
+    }
+});
+
+//////
+
 module.exports = router;
